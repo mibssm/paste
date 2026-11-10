@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PasteRoom</title>
+<meta name="description" content="Paste text or code, get a 6-character code, share it.">
+<script>
+  try { document.documentElement.dataset.theme = localStorage.getItem('theme') || 'dark'; } catch (e) {}
+</script>
+<link id="hljs-theme" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<style>
+:root{
+  --bg:#0d1016; --panel:#151a23; --field:#0b0e13; --line:#262d3b;
+  --text:#e8ebf2; --muted:#8c95a8; --accent:#7f8fff; --accent-ink:#0b0e1f;
+  --ok:#52d6a0;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+[data-theme=light]{
+  --bg:#f3f4f8; --panel:#fff; --field:#f8f9fc; --line:#dde0ea;
+  --text:#171a22; --muted:#667087; --accent:#4b5bdc; --accent-ink:#fff; --ok:#13875c;
+}
+*{box-sizing:border-box}
+html{color-scheme:dark}
+[data-theme=light]{color-scheme:light}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 var(--sans);min-height:100vh}
+.wrap{max-width:840px;margin:0 auto;padding:20px 16px 64px}
+header{display:flex;align-items:center;justify-content:space-between;padding:8px 0 28px}
+.logo{font-weight:800;font-size:1.35rem;letter-spacing:-.03em}
+.logo span{color:var(--accent)}
+button,select,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.icon-btn{background:var(--panel);border:1px solid var(--line);border-radius:10px;width:40px;height:40px;cursor:pointer;font-size:1.1rem}
+.icon-btn:hover{border-color:var(--accent)}
+h1{font-size:clamp(1.7rem,5vw,2.4rem);line-height:1.15;letter-spacing:-.03em;margin:0 0 6px}
+.sub{color:var(--muted);margin:0 0 22px}
+.tabs{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:14px}
+.tab{background:none;border:0;border-radius:9px;padding:8px 18px;cursor:pointer;color:var(--muted);font-weight:600}
+.tab[aria-selected=true]{background:var(--accent);color:var(--accent-ink)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px}
+textarea{width:100%;min-height:300px;resize:vertical;background:var(--field);border:1px solid var(--line);border-radius:12px;padding:14px;font:14px/1.55 var(--mono);tab-size:2}
+textarea:focus{border-color:var(--accent);outline:none}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:12px}
+.row .grow{flex:1}
+select{background:var(--field);border:1px solid var(--line);border-radius:10px;padding:9px 12px}
+.count{color:var(--muted);font-size:.85rem}
+.btn{background:var(--accent);color:var(--accent-ink);border:0;border-radius:10px;padding:10px 20px;font-weight:700;cursor:pointer}
+.btn:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.55;cursor:wait}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line);font-weight:600;padding:8px 14px}
+.btn.ghost:hover{border-color:var(--accent)}
+.open{text-align:center;padding:36px 16px}
+.open p{margin:0 0 16px;color:var(--muted)}
+#codeIn{width:min(320px,100%);text-align:center;font:700 2rem var(--mono);letter-spacing:.4em;padding:14px 0 14px .4em;text-transform:uppercase;background:var(--field);border:2px dashed var(--line);border-radius:14px}
+#codeIn:focus{border-color:var(--accent);outline:none}
+#codeIn::placeholder{color:var(--line)}
+.open .btn{display:block;margin:18px auto 0}
+/* the ticket: the one memorable element */
+.ticket{display:flex;align-items:stretch;background:var(--panel);border:1px solid var(--line);border-radius:16px;margin-bottom:14px;overflow:hidden}
+.stub{padding:14px 22px;border-right:2px dashed var(--line);display:flex;flex-direction:column;justify-content:center;gap:2px}
+.stub small{color:var(--muted)}
+.stub b{font:800 clamp(1.6rem,7vw,2.3rem)/1 var(--mono);letter-spacing:.22em;color:var(--accent)}
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px 16px;flex:1;justify-content:flex-end}
+.badge{color:var(--muted);font-size:.85rem;margin-right:auto}
+pre{margin:0;background:var(--field);border:1px solid var(--line);border-radius:14px;overflow:auto;max-height:70vh}
+pre code.hljs{background:transparent;padding:16px;font:14px/1.55 var(--mono);display:block;min-width:max-content}
+[hidden]{display:none!important}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--text);color:var(--bg);padding:10px 18px;border-radius:10px;font-weight:600;opacity:0;pointer-events:none;transition:.2s;z-index:9;max-width:90vw}
+#toast.show{opacity:1;transform:translateX(-50%)}
+@media (max-width:520px){.ticket{flex-direction:column}.stub{border-right:0;border-bottom:2px dashed var(--line)}.tools{justify-content:flex-start}}
+@media (prefers-reduced-motion:reduce){#toast{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">Paste<span>Room</span></div>
+    <button class="icon-btn" id="themeBtn" aria-label="Switch light or dark theme"></button>
+  </header>
+
+  <h1>Paste it. Share the code.</h1>
+  <p class="sub">Save text or code and get a 6-character code. Anyone with the code can open it.</p>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tabNew" aria-selected="true">New paste</button>
+    <button class="tab" role="tab" id="tabOpen" aria-selected="false">Open a code</button>
+  </div>
+
+  <section id="newPanel" class="card">
+    <textarea id="text" placeholder="Paste your text or code here" spellcheck="false" maxlength="100000"></textarea>
+    <div class="row">
+      <select id="lang" aria-label="Language">
+        <option value="auto">Auto-detect</option>
+        <option value="plaintext">Plain text</option>
+        <option value="javascript">JavaScript</option>
+        <option value="typescript">TypeScript</option>
+        <option value="python">Python</option>
+        <option value="java">Java</option>
+        <option value="cpp">C++</option>
+        <option value="csharp">C#</option>
+        <option value="go">Go</option>
+        <option value="rust">Rust</option>
+        <option value="php">PHP</option>
+        <option value="ruby">Ruby</option>
+        <option value="kotlin">Kotlin</option>
+        <option value="swift">Swift</option>
+        <option value="xml">HTML / XML</option>
+        <option value="css">CSS</option>
+        <option value="json">JSON</option>
+        <option value="yaml">YAML</option>
+        <option value="sql">SQL</option>
+        <option value="bash">Bash</option>
+        <option value="markdown">Markdown</option>
+      </select>
+      <span class="count" id="count">0 / 100,000</span>
+      <span class="grow"></span>
+      <button class="btn" id="saveBtn">Create code</button>
+    </div>
+  </section>
+
+  <section id="openPanel" class="card open" hidden>
+    <p>Type the 6-character code you were given.</p>
+    <input id="codeIn" maxlength="6" placeholder="ABC234" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Paste code">
+    <button class="btn" id="openBtn">Open paste</button>
+  </section>
+
+  <section id="view" hidden style="margin-top:22px">
+    <div class="ticket">
+      <div class="stub"><small>Your code</small><b id="codeLabel"></b></div>
+      <div class="tools">
+        <span class="badge" id="meta"></span>
+        <button class="btn ghost" id="copyCode">Copy code</button>
+        <button class="btn" id="copyText">Copy text</button>
+      </div>
+    </div>
+    <pre><code id="out" class="hljs"></code></pre>
+  </section>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+// No 0/O or 1/I so codes are easy to read out loud.
+const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const CODE_RE = /^[A-HJ-NP-Z2-9]{6}$/;
+const MAX = 100000;
+let current = '', currentCode = '';
+
+/* ---------- theme ---------- */
+function setTheme(t) {
+  document.documentElement.dataset.theme = t;
+  $('#themeBtn').textContent = t === 'dark' ? '☀' : '☾';
+  $('#hljs-theme').href = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/' +
+    (t === 'dark' ? 'github-dark' : 'github') + '.min.css';
+  try { localStorage.setItem('theme', t); } catch (e) {}
+}
+$('#themeBtn').onclick = () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
+setTheme(document.documentElement.dataset.theme);
+
+/* ---------- ui helpers ---------- */
+let toastTimer;
+function toast(msg) {
+  const t = $('#toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+function copy(str, msg) {
+  const done = () => toast(msg);
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(str).then(done, () => fallbackCopy(str, done));
+  } else fallbackCopy(str, done);
+}
+function fallbackCopy(str, done) {
+  const ta = document.createElement('textarea');
+  ta.value = str; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); done(); } catch (e) { toast('Copy failed. Select the text manually.'); }
+  ta.remove();
+}
+function tab(which) {
+  const isNew = which === 'new';
+  $('#tabNew').setAttribute('aria-selected', isNew);
+  $('#tabOpen').setAttribute('aria-selected', !isNew);
+  $('#newPanel').hidden = !isNew;
+  $('#openPanel').hidden = isNew;
+  if (!isNew) $('#codeIn').focus();
+}
+$('#tabNew').onclick = () => tab('new');
+$('#tabOpen').onclick = () => tab('open');
+
+$('#text').addEventListener('input', e => {
+  $('#count').textContent = e.target.value.length.toLocaleString() + ' / 100,000';
+});
+
+/* ---------- show a paste ---------- */
+function show(code, text, lang) {
+  current = text; currentCode = code;
+  const out = $('#out');
+  out.className = 'hljs';
+  let used = 'Plain text';
+  if (lang && lang !== 'plaintext' && text.length <= 60000) {
+    try {
+      const r = (lang === 'auto' || !hljs.getLanguage(lang))
+        ? hljs.highlightAuto(text)
+        : hljs.highlight(text, { language: lang, ignoreIllegals: true });
+      out.innerHTML = r.value;
+      used = r.language ? (hljs.getLanguage(r.language)?.name || r.language) : 'Plain text';
+    } catch (e) { out.textContent = text; }
+  } else out.textContent = text;
+  $('#codeLabel').textContent = code;
+  $('#meta').textContent = used + ', ' + text.length.toLocaleString() + ' characters';
+  $('#view').hidden = false;
+  history.replaceState(null, '', '#' + code);
+  $('#view').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+$('#copyCode').onclick = () => copy(currentCode, 'Code copied');
+$('#copyText').onclick = () => copy(current, 'Text copied');
+
+/* ---------- create ---------- */
+function genCode() {
+  const a = new Uint32Array(6);
+  crypto.getRandomValues(a);
+  return Array.from(a, n => ALPHABET[n % ALPHABET.length]).join(''); // 32 chars: no modulo bias
+}
+async function createPaste() {
+  const text = $('#text').value;
+  const lang = $('#lang').value;
+  if (!text.trim()) return toast('Paste some text first');
+  if (text.length > MAX) return toast('Too long. The limit is 100,000 characters');
+  const btn = $('#saveBtn');
+  btn.disabled = true; btn.textContent = 'Saving';
+  try {
+    // A transaction only writes when the code is free, so a used code is never overwritten.
+    for (let i = 0; i < 12; i++) {
+      const code = genCode();
+      const res = await db.ref('pastes/' + code).transaction(
+        cur => cur === null
+          ? { text, lang, createdAt: firebase.database.ServerValue.TIMESTAMP }
+          : undefined,
+        undefined, false);
+      if (res.committed) { show(code, text, lang); toast('Saved. Share the code ' + code); return; }
+    }
+    toast('Could not find a free code. Try again');
+  } catch (e) {
+    console.error(e);
+    toast('Save failed. Check your database rules and connection');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Create code';
+  }
+}
+$('#saveBtn').onclick = createPaste;
+
+/* ---------- open ---------- */
+async function openPaste(raw) {
+  const code = String(raw).toUpperCase().replace(/\s/g, '');
+  if (!CODE_RE.test(code)) return toast('Codes have 6 letters or digits, like ABC234');
+  const btn = $('#openBtn');
+  btn.disabled = true;
+  try {
+    const snap = await db.ref('pastes/' + code).once('value');
+    if (!snap.exists()) return toast('No paste found for ' + code);
+    const v = snap.val();
+    show(code, v.text, v.lang || 'auto');
+  } catch (e) {
+    console.error(e);
+    toast('Could not load. Check your connection');
+  } finally { btn.disabled = false; }
+}
+$('#openBtn').onclick = () => openPaste($('#codeIn').value);
+$('#codeIn').addEventListener('keydown', e => { if (e.key === 'Enter') openPaste(e.target.value); });
+$('#codeIn').addEventListener('input', e => { e.target.value = e.target.value.toUpperCase(); });
+
+/* ---------- open from link, e.g. yoursite.github.io/#ABC234 ---------- */
+const h = location.hash.slice(1).toUpperCase();
+if (CODE_RE.test(h)) { tab('open'); $('#codeIn').value = h; openPaste(h); }
+</script>
+</body>
+</html>
