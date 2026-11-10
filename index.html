@@ -2,94 +2,117 @@
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>PasteRoom</title>
 <meta name="description" content="Paste text or code, get a 6-character code, share it.">
 <script>
   try { document.documentElement.dataset.theme = localStorage.getItem('theme') || 'dark'; } catch (e) {}
 </script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link id="hljs-theme" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
 <style>
 :root{
-  --bg:#0d1016; --panel:#151a23; --field:#0b0e13; --line:#262d3b;
-  --text:#e8ebf2; --muted:#8c95a8; --accent:#7f8fff; --accent-ink:#0b0e1f;
-  --ok:#52d6a0;
-  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
-  --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --bg:#0e0f12; --surface:#141519; --field:#0a0b0d; --line:#25272e; --line2:#363942;
+  --text:#e9eaee; --muted:#8a8e99; --accent:#5b9dff; --accent-ink:#06101f;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
 }
 [data-theme=light]{
-  --bg:#f3f4f8; --panel:#fff; --field:#f8f9fc; --line:#dde0ea;
-  --text:#171a22; --muted:#667087; --accent:#4b5bdc; --accent-ink:#fff; --ok:#13875c;
+  --bg:#f6f6f7; --surface:#fff; --field:#fcfcfd; --line:#e2e3e7; --line2:#cdd0d6;
+  --text:#15161a; --muted:#666a76; --accent:#1c5fdc; --accent-ink:#fff;
 }
 *{box-sizing:border-box}
 html{color-scheme:dark}
 [data-theme=light]{color-scheme:light}
-body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 var(--sans);min-height:100vh}
-.wrap{max-width:840px;margin:0 auto;padding:20px 16px 64px}
-header{display:flex;align-items:center;justify-content:space-between;padding:8px 0 28px}
-.logo{font-weight:800;font-size:1.35rem;letter-spacing:-.03em}
-.logo span{color:var(--accent)}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 var(--sans);min-height:100dvh;-webkit-text-size-adjust:100%}
 button,select,input,textarea{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.icon-btn{background:var(--panel);border:1px solid var(--line);border-radius:10px;width:40px;height:40px;cursor:pointer;font-size:1.1rem}
-.icon-btn:hover{border-color:var(--accent)}
-h1{font-size:clamp(1.7rem,5vw,2.4rem);line-height:1.15;letter-spacing:-.03em;margin:0 0 6px}
-.sub{color:var(--muted);margin:0 0 22px}
-.tabs{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:14px}
-.tab{background:none;border:0;border-radius:9px;padding:8px 18px;cursor:pointer;color:var(--muted);font-weight:600}
-.tab[aria-selected=true]{background:var(--accent);color:var(--accent-ink)}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px}
-textarea{width:100%;min-height:300px;resize:vertical;background:var(--field);border:1px solid var(--line);border-radius:12px;padding:14px;font:14px/1.55 var(--mono);tab-size:2}
-textarea:focus{border-color:var(--accent);outline:none}
-.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:12px}
-.row .grow{flex:1}
-select{background:var(--field);border:1px solid var(--line);border-radius:10px;padding:9px 12px}
-.count{color:var(--muted);font-size:.85rem}
-.btn{background:var(--accent);color:var(--accent-ink);border:0;border-radius:10px;padding:10px 20px;font-weight:700;cursor:pointer}
-.btn:hover{filter:brightness(1.08)}
+.top{border-bottom:1px solid var(--line);background:var(--surface);padding-top:env(safe-area-inset-top)}
+.in{max-width:960px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
+.top .in{display:flex;align-items:center;justify-content:space-between;height:52px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:600;letter-spacing:-.01em}
+.mark{width:16px;height:16px;border:2px solid var(--accent);border-radius:3px;position:relative}
+.mark::after{content:"";position:absolute;left:2px;right:2px;top:5px;height:2px;background:var(--accent)}
+.theme{width:34px;height:34px;display:grid;place-items:center;background:none;border:1px solid var(--line);border-radius:5px;color:var(--muted);cursor:pointer}
+.theme:hover{color:var(--text);border-color:var(--line2)}
+.theme svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+[data-theme=dark] .moon{display:none}
+[data-theme=light] .sun{display:none}
+main{padding-top:36px;padding-bottom:calc(64px + env(safe-area-inset-bottom))}
+h1{font-size:clamp(1.35rem,4vw,1.75rem);line-height:1.2;letter-spacing:-.02em;font-weight:600;margin:0 0 6px}
+.sub{color:var(--muted);margin:0 0 26px;max-width:52ch}
+.tabs{display:flex;gap:24px;border-bottom:1px solid var(--line);margin-bottom:18px}
+.tab{background:none;border:0;border-bottom:2px solid transparent;margin-bottom:-1px;padding:8px 0;color:var(--muted);font-weight:500;cursor:pointer}
+.tab:hover{color:var(--text)}
+.tab[aria-selected=true]{color:var(--text);border-color:var(--accent)}
+.editor{border:1px solid var(--line);border-radius:6px;background:var(--surface);overflow:hidden}
+.bar{display:flex;align-items:center;gap:12px;padding:8px 10px}
+.bar.head{border-bottom:1px solid var(--line)}
+.bar.foot{border-top:1px solid var(--line);justify-content:space-between}
+.count{margin-left:auto;color:var(--muted);font:12px var(--mono)}
+.hint{color:var(--muted);font-size:13px}
+select{background:var(--field);border:1px solid var(--line);border-radius:4px;padding:5px 8px;font-size:13px;max-width:100%}
+textarea{display:block;width:100%;min-height:340px;resize:vertical;border:0;border-radius:0;background:var(--field);padding:14px 16px;font:13px/1.6 var(--mono);tab-size:2}
+textarea:focus-visible{outline:none;box-shadow:inset 2px 0 0 var(--accent)}
+.btn{height:36px;padding:0 16px;border-radius:5px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);font-weight:500;cursor:pointer;white-space:nowrap}
+.btn:hover{filter:brightness(1.1)}
 .btn:disabled{opacity:.55;cursor:wait}
-.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line);font-weight:600;padding:8px 14px}
-.btn.ghost:hover{border-color:var(--accent)}
-.open{text-align:center;padding:36px 16px}
-.open p{margin:0 0 16px;color:var(--muted)}
-#codeIn{width:min(320px,100%);text-align:center;font:700 2rem var(--mono);letter-spacing:.4em;padding:14px 0 14px .4em;text-transform:uppercase;background:var(--field);border:2px dashed var(--line);border-radius:14px}
-#codeIn:focus{border-color:var(--accent);outline:none}
-#codeIn::placeholder{color:var(--line)}
-.open .btn{display:block;margin:18px auto 0}
-/* the ticket: the one memorable element */
-.ticket{display:flex;align-items:stretch;background:var(--panel);border:1px solid var(--line);border-radius:16px;margin-bottom:14px;overflow:hidden}
-.stub{padding:14px 22px;border-right:2px dashed var(--line);display:flex;flex-direction:column;justify-content:center;gap:2px}
-.stub small{color:var(--muted)}
-.stub b{font:800 clamp(1.6rem,7vw,2.3rem)/1 var(--mono);letter-spacing:.22em;color:var(--accent)}
-.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px 16px;flex:1;justify-content:flex-end}
-.badge{color:var(--muted);font-size:.85rem;margin-right:auto}
-pre{margin:0;background:var(--field);border:1px solid var(--line);border-radius:14px;overflow:auto;max-height:70vh}
-pre code.hljs{background:transparent;padding:16px;font:14px/1.55 var(--mono);display:block;min-width:max-content}
+.btn.ghost{background:none;color:var(--text);border-color:var(--line2)}
+.btn.ghost:hover{border-color:var(--accent);filter:none}
+.open label{display:block;font-weight:500;margin-bottom:8px}
+.open .row{display:flex;flex-wrap:wrap;gap:10px}
+#codeIn{flex:1 1 220px;max-width:340px;min-width:0;height:52px;padding:0 14px;font:500 1.5rem var(--mono);letter-spacing:.3em;text-transform:uppercase;background:var(--field);border:1px solid var(--line2);border-radius:5px}
+#codeIn::placeholder{color:var(--line2)}
+#codeIn:focus{outline:none;border-color:var(--accent)}
+.open .btn{height:52px}
+#view{margin-top:28px}
+.vhead{display:flex;flex-wrap:wrap;gap:14px 20px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.cells{display:flex;gap:6px}
+.cells span{width:clamp(34px,10vw,46px);height:clamp(42px,12vw,56px);display:grid;place-items:center;border:1px solid var(--accent);border-radius:4px;color:var(--accent);background:var(--surface);font:500 clamp(1.2rem,5vw,1.7rem) var(--mono)}
+.acts{display:flex;flex-wrap:wrap;gap:8px}
+.meta{color:var(--muted);font-size:13px;margin:0 0 10px}
+.code{display:flex;overflow:auto;max-height:70vh;background:var(--field);border:1px solid var(--line);border-radius:6px}
+.gutter{position:sticky;left:0;flex:none;padding:14px 12px 14px 14px;text-align:right;color:var(--muted);opacity:.8;background:var(--field);border-right:1px solid var(--line);font:13px/1.6 var(--mono);user-select:none;white-space:pre}
+.code pre{margin:0;flex:1 0 auto}
+.code pre code.hljs{display:block;overflow:visible;min-width:max-content;padding:14px 16px;background:transparent;font:13px/1.6 var(--mono)}
 [hidden]{display:none!important}
-#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--text);color:var(--bg);padding:10px 18px;border-radius:10px;font-weight:600;opacity:0;pointer-events:none;transition:.2s;z-index:9;max-width:90vw}
-#toast.show{opacity:1;transform:translateX(-50%)}
-@media (max-width:520px){.ticket{flex-direction:column}.stub{border-right:0;border-bottom:2px dashed var(--line)}.tools{justify-content:flex-start}}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translate(-50%,12px);background:var(--text);color:var(--bg);padding:9px 16px;border-radius:5px;font-weight:500;font-size:14px;opacity:0;pointer-events:none;transition:opacity .15s,transform .15s;z-index:9;max-width:92vw}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+@media (max-width:640px){
+  main{padding-top:24px}
+  textarea,select,#codeIn{font-size:16px}
+  textarea{min-height:280px}
+  .bar.foot{flex-direction:column;align-items:stretch}
+  .bar.foot .btn,.acts .btn{flex:1}
+  .hint{order:2}
+  .open .btn{flex:1 1 100%}
+  .acts{width:100%}
+}
 @media (prefers-reduced-motion:reduce){#toast{transition:none}}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <div class="logo">Paste<span>Room</span></div>
-    <button class="icon-btn" id="themeBtn" aria-label="Switch light or dark theme"></button>
-  </header>
+<header class="top"><div class="in">
+  <div class="logo"><span class="mark"></span>PasteRoom</div>
+  <button class="theme" id="themeBtn" aria-label="Switch between light and dark theme">
+    <svg class="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+    <svg class="moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+  </button>
+</div></header>
 
-  <h1>Paste it. Share the code.</h1>
-  <p class="sub">Save text or code and get a 6-character code. Anyone with the code can open it.</p>
+<main class="in">
+  <h1>Share text with a 6-character code</h1>
+  <p class="sub">No account needed. Paste your text, get a code, and send it to anyone.</p>
 
   <div class="tabs" role="tablist">
     <button class="tab" role="tab" id="tabNew" aria-selected="true">New paste</button>
     <button class="tab" role="tab" id="tabOpen" aria-selected="false">Open a code</button>
   </div>
 
-  <section id="newPanel" class="card">
-    <textarea id="text" placeholder="Paste your text or code here" spellcheck="false" maxlength="100000"></textarea>
-    <div class="row">
+  <section id="newPanel" class="editor">
+    <div class="bar head">
       <select id="lang" aria-label="Language">
         <option value="auto">Auto-detect</option>
         <option value="plaintext">Plain text</option>
@@ -114,29 +137,35 @@ pre code.hljs{background:transparent;padding:16px;font:14px/1.55 var(--mono);dis
         <option value="markdown">Markdown</option>
       </select>
       <span class="count" id="count">0 / 100,000</span>
-      <span class="grow"></span>
+    </div>
+    <textarea id="text" placeholder="Paste your text or code here" spellcheck="false" maxlength="100000" aria-label="Paste content"></textarea>
+    <div class="bar foot">
+      <span class="hint">Anyone with the code can read this paste.</span>
       <button class="btn" id="saveBtn">Create code</button>
     </div>
   </section>
 
-  <section id="openPanel" class="card open" hidden>
-    <p>Type the 6-character code you were given.</p>
-    <input id="codeIn" maxlength="6" placeholder="ABC234" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Paste code">
-    <button class="btn" id="openBtn">Open paste</button>
+  <section id="openPanel" class="open" hidden>
+    <label for="codeIn">Enter a code</label>
+    <div class="row">
+      <input id="codeIn" maxlength="6" placeholder="ABC234" autocomplete="off" autocapitalize="characters" spellcheck="false">
+      <button class="btn" id="openBtn">Open paste</button>
+    </div>
   </section>
 
-  <section id="view" hidden style="margin-top:22px">
-    <div class="ticket">
-      <div class="stub"><small>Your code</small><b id="codeLabel"></b></div>
-      <div class="tools">
-        <span class="badge" id="meta"></span>
-        <button class="btn ghost" id="copyCode">Copy code</button>
+  <section id="view" hidden>
+    <div class="vhead">
+      <div class="cells" id="cells" aria-label="Paste code"></div>
+      <div class="acts">
         <button class="btn" id="copyText">Copy text</button>
+        <button class="btn ghost" id="copyCode">Copy code</button>
+        <button class="btn ghost" id="newBtn">New paste</button>
       </div>
     </div>
-    <pre><code id="out" class="hljs"></code></pre>
+    <p class="meta" id="meta"></p>
+    <div class="code"><div class="gutter" id="gutter" aria-hidden="true"></div><pre><code id="out" class="hljs"></code></pre></div>
   </section>
-</div>
+</main>
 <div id="toast" role="status" aria-live="polite"></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -154,7 +183,6 @@ let current = '', currentCode = '';
 /* ---------- theme ---------- */
 function setTheme(t) {
   document.documentElement.dataset.theme = t;
-  $('#themeBtn').textContent = t === 'dark' ? '☀' : '☾';
   $('#hljs-theme').href = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/' +
     (t === 'dark' ? 'github-dark' : 'github') + '.min.css';
   try { localStorage.setItem('theme', t); } catch (e) {}
@@ -178,7 +206,7 @@ function copy(str, msg) {
 }
 function fallbackCopy(str, done) {
   const ta = document.createElement('textarea');
-  ta.value = str; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  ta.value = str; ta.style.cssText = 'position:fixed;opacity:0;font-size:16px';
   document.body.appendChild(ta); ta.select();
   try { document.execCommand('copy'); done(); } catch (e) { toast('Copy failed. Select the text manually.'); }
   ta.remove();
@@ -194,9 +222,10 @@ function tab(which) {
 $('#tabNew').onclick = () => tab('new');
 $('#tabOpen').onclick = () => tab('open');
 
-$('#text').addEventListener('input', e => {
-  $('#count').textContent = e.target.value.length.toLocaleString() + ' / 100,000';
-});
+function updateCount() {
+  $('#count').textContent = $('#text').value.length.toLocaleString() + ' / 100,000';
+}
+$('#text').addEventListener('input', updateCount);
 
 /* ---------- show a paste ---------- */
 function show(code, text, lang) {
@@ -213,14 +242,23 @@ function show(code, text, lang) {
       used = r.language ? (hljs.getLanguage(r.language)?.name || r.language) : 'Plain text';
     } catch (e) { out.textContent = text; }
   } else out.textContent = text;
-  $('#codeLabel').textContent = code;
-  $('#meta').textContent = used + ', ' + text.length.toLocaleString() + ' characters';
+  const lines = text.split('\n').length;
+  $('#gutter').textContent = Array.from({ length: lines }, (_, i) => i + 1).join('\n');
+  $('#cells').innerHTML = [...code].map(c => '<span>' + c + '</span>').join('');
+  $('#meta').textContent = used + ', ' + lines.toLocaleString() + (lines === 1 ? ' line, ' : ' lines, ') +
+    text.length.toLocaleString() + ' characters';
   $('#view').hidden = false;
   history.replaceState(null, '', '#' + code);
   $('#view').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 $('#copyCode').onclick = () => copy(currentCode, 'Code copied');
 $('#copyText').onclick = () => copy(current, 'Text copied');
+$('#newBtn').onclick = () => {
+  $('#text').value = ''; updateCount();
+  $('#view').hidden = true;
+  history.replaceState(null, '', location.pathname + location.search);
+  tab('new'); $('#text').focus(); window.scrollTo({ top: 0, behavior: 'smooth' });
+};
 
 /* ---------- create ---------- */
 function genCode() {
@@ -244,7 +282,7 @@ async function createPaste() {
           ? { text, lang, createdAt: firebase.database.ServerValue.TIMESTAMP }
           : undefined,
         undefined, false);
-      if (res.committed) { show(code, text, lang); toast('Saved. Share the code ' + code); return; }
+      if (res.committed) { show(code, text, lang); toast('Saved. Your code is ' + code); return; }
     }
     toast('Could not find a free code. Try again');
   } catch (e) {
