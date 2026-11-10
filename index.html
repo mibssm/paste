@@ -1,171 +1,232 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>PasteRoom</title>
 <meta name="description" content="Paste text or code, get a 6-character code, share it.">
 <script>
-  try { document.documentElement.dataset.theme = localStorage.getItem('theme') || 'dark'; } catch (e) {}
+  try { document.documentElement.dataset.theme = localStorage.getItem('theme') || 'light'; } catch (e) {}
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<link id="hljs-theme" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link id="hljs-theme" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
 <style>
 :root{
-  --bg:#0e0f12; --surface:#141519; --field:#0a0b0d; --line:#25272e; --line2:#363942;
-  --text:#e9eaee; --muted:#8a8e99; --accent:#5b9dff; --accent-ink:#06101f;
-  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --bg:#fff; --side:#f6f8fa; --line:#d1d9e0; --text:#1f2328; --muted:#59636e; --gutter:#818b98;
+  --hover:#eaeef2; --accent:#0969da; --ink:#fff; --status:#0969da; --ok:#1a7f37;
+  --sans:"Geist",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --nav:56px;
 }
-[data-theme=light]{
-  --bg:#f6f6f7; --surface:#fff; --field:#fcfcfd; --line:#e2e3e7; --line2:#cdd0d6;
-  --text:#15161a; --muted:#666a76; --accent:#1c5fdc; --accent-ink:#fff;
+[data-theme=dark]{
+  --bg:#0d1117; --side:#151b23; --line:#30363d; --text:#e6edf3; --muted:#8d96a0; --gutter:#6e7681;
+  --hover:#212830; --accent:#1f6feb; --ink:#fff; --status:#1f6feb; --ok:#3fb950;
 }
 *{box-sizing:border-box}
-html{color-scheme:dark}
-[data-theme=light]{color-scheme:light}
-body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 var(--sans);min-height:100dvh;-webkit-text-size-adjust:100%}
+html{color-scheme:light}
+[data-theme=dark]{color-scheme:dark}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 var(--sans);-webkit-text-size-adjust:100%;overflow:hidden}
 button,select,input,textarea{font:inherit;color:inherit}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.top{border-bottom:1px solid var(--line);background:var(--surface);padding-top:env(safe-area-inset-top)}
-.in{max-width:960px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
-.top .in{display:flex;align-items:center;justify-content:space-between;height:52px}
-.logo{display:flex;align-items:center;gap:10px;font-weight:600;letter-spacing:-.01em}
-.mark{width:16px;height:16px;border:2px solid var(--accent);border-radius:3px;position:relative}
-.mark::after{content:"";position:absolute;left:2px;right:2px;top:5px;height:2px;background:var(--accent)}
-.theme{width:34px;height:34px;display:grid;place-items:center;background:none;border:1px solid var(--line);border-radius:5px;color:var(--muted);cursor:pointer}
-.theme:hover{color:var(--text);border-color:var(--line2)}
-.theme svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-[data-theme=dark] .moon{display:none}
-[data-theme=light] .sun{display:none}
-main{padding-top:36px;padding-bottom:calc(64px + env(safe-area-inset-bottom))}
-h1{font-size:clamp(1.35rem,4vw,1.75rem);line-height:1.2;letter-spacing:-.02em;font-weight:600;margin:0 0 6px}
-.sub{color:var(--muted);margin:0 0 26px;max-width:52ch}
-.tabs{display:flex;gap:24px;border-bottom:1px solid var(--line);margin-bottom:18px}
-.tab{background:none;border:0;border-bottom:2px solid transparent;margin-bottom:-1px;padding:8px 0;color:var(--muted);font-weight:500;cursor:pointer}
-.tab:hover{color:var(--text)}
-.tab[aria-selected=true]{color:var(--text);border-color:var(--accent)}
-.editor{border:1px solid var(--line);border-radius:6px;background:var(--surface);overflow:hidden}
-.bar{display:flex;align-items:center;gap:12px;padding:8px 10px}
-.bar.head{border-bottom:1px solid var(--line)}
-.bar.foot{border-top:1px solid var(--line);justify-content:space-between}
-.count{margin-left:auto;color:var(--muted);font:12px var(--mono)}
-.hint{color:var(--muted);font-size:13px}
-select{background:var(--field);border:1px solid var(--line);border-radius:4px;padding:5px 8px;font-size:13px;max-width:100%}
-textarea{display:block;width:100%;min-height:340px;resize:vertical;border:0;border-radius:0;background:var(--field);padding:14px 16px;font:13px/1.6 var(--mono);tab-size:2}
-textarea:focus-visible{outline:none;box-shadow:inset 2px 0 0 var(--accent)}
-.btn{height:36px;padding:0 16px;border-radius:5px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);font-weight:500;cursor:pointer;white-space:nowrap}
+:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+[hidden]{display:none!important}
+
+/* ---- shell: phone first ---- */
+.app{display:grid;height:100dvh;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;grid-template-areas:"top" "main" "nav"}
+.top{grid-area:top;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:env(safe-area-inset-top) 14px 0;height:calc(48px + env(safe-area-inset-top));background:var(--side);border-bottom:1px solid var(--line)}
+.logo{display:flex;align-items:center;gap:9px;font-weight:600;font-size:15px;letter-spacing:-.01em}
+.logo svg{width:18px;height:18px;fill:none;stroke:var(--accent);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.hint{display:none;margin-left:auto;color:var(--muted);font:12px var(--mono)}
+.icon{width:32px;height:32px;display:grid;place-items:center;background:none;border:1px solid var(--line);border-radius:6px;color:var(--muted);cursor:pointer}
+.icon:hover{background:var(--hover);color:var(--text)}
+.icon svg,.bnav svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+[data-theme=dark] .moon,[data-theme=light] .sun{display:none}
+
+.side{grid-area:main;display:none;overflow:auto;background:var(--side);padding:18px 16px}
+.main{grid-area:main;display:flex;flex-direction:column;min-width:0;min-height:0}
+.status{display:none}
+.bnav{grid-area:nav;display:flex;background:var(--side);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+.bnav button{flex:1;height:var(--nav);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:none;border:0;color:var(--muted);font-size:12px;cursor:pointer}
+.bnav button[aria-current=true]{color:var(--accent);font-weight:600}
+body[data-view=open] .side,body[data-view=recent] .side{display:block}
+body[data-view=open] .main,body[data-view=recent] .main{display:none}
+body[data-view=open] .sec-recent,body[data-view=recent] .sec-open{display:none}
+body[data-show=viewer] #editor,body:not([data-show=viewer]) #viewer{display:none}
+
+/* ---- sidebar content ---- */
+.side h2{margin:0 0 8px;font-size:13px;font-weight:600}
+.sec-recent{margin-top:24px}
+.row{display:flex;gap:8px}
+#codeIn{flex:1;min-width:0;height:44px;padding:0 12px;font:500 18px var(--mono);letter-spacing:.2em;text-transform:uppercase;background:var(--bg);border:1px solid var(--line);border-radius:6px}
+#codeIn::placeholder{color:var(--line)}
+#codeIn:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
+.ri{display:flex;align-items:baseline;gap:10px;width:100%;padding:9px 10px;margin:0 0 2px;text-align:left;background:none;border:1px solid transparent;border-radius:6px;cursor:pointer}
+.ri:hover{background:var(--hover)}
+.ri b{font:500 13px var(--mono);letter-spacing:.08em;color:var(--accent)}
+.ri span{color:var(--muted);font:12px var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.empty{margin:0;color:var(--muted);font-size:13px}
+.note{margin:20px 0 0;color:var(--muted);font-size:13px}
+
+/* ---- tab bar + editor ---- */
+.tabbar{display:flex;align-items:stretch;gap:10px;background:var(--side);border-bottom:1px solid var(--line);padding:0 10px 0 0;min-height:42px}
+.tab{display:flex;align-items:center;gap:8px;padding:0 16px;background:var(--bg);border-right:1px solid var(--line);border-top:2px solid var(--accent);margin-bottom:-1px;font:13px var(--mono);white-space:nowrap}
+.tab i{width:7px;height:7px;border-radius:50%;background:var(--muted);opacity:.7}
+.tab i.saved{background:var(--ok);opacity:1}
+.tools{display:flex;align-items:center;gap:8px;margin-left:auto}
+select{background:var(--bg);border:1px solid var(--line);border-radius:6px;height:30px;padding:0 8px;font-size:13px;max-width:140px}
+.btn{height:32px;padding:0 14px;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:var(--ink);font-weight:500;cursor:pointer;white-space:nowrap}
 .btn:hover{filter:brightness(1.1)}
 .btn:disabled{opacity:.55;cursor:wait}
-.btn.ghost{background:none;color:var(--text);border-color:var(--line2)}
-.btn.ghost:hover{border-color:var(--accent);filter:none}
-.open label{display:block;font-weight:500;margin-bottom:8px}
-.open .row{display:flex;flex-wrap:wrap;gap:10px}
-#codeIn{flex:1 1 220px;max-width:340px;min-width:0;height:52px;padding:0 14px;font:500 1.5rem var(--mono);letter-spacing:.3em;text-transform:uppercase;background:var(--field);border:1px solid var(--line2);border-radius:5px}
-#codeIn::placeholder{color:var(--line2)}
-#codeIn:focus{outline:none;border-color:var(--accent)}
-.open .btn{height:52px}
-#view{margin-top:28px}
-.vhead{display:flex;flex-wrap:wrap;gap:14px 20px;align-items:center;justify-content:space-between;margin-bottom:12px}
-.cells{display:flex;gap:6px}
-.cells span{width:clamp(34px,10vw,46px);height:clamp(42px,12vw,56px);display:grid;place-items:center;border:1px solid var(--accent);border-radius:4px;color:var(--accent);background:var(--surface);font:500 clamp(1.2rem,5vw,1.7rem) var(--mono)}
-.acts{display:flex;flex-wrap:wrap;gap:8px}
-.meta{color:var(--muted);font-size:13px;margin:0 0 10px}
-.code{display:flex;overflow:auto;max-height:70vh;background:var(--field);border:1px solid var(--line);border-radius:6px}
-.gutter{position:sticky;left:0;flex:none;padding:14px 12px 14px 14px;text-align:right;color:var(--muted);opacity:.8;background:var(--field);border-right:1px solid var(--line);font:13px/1.6 var(--mono);user-select:none;white-space:pre}
-.code pre{margin:0;flex:1 0 auto}
-.code pre code.hljs{display:block;overflow:visible;min-width:max-content;padding:14px 16px;background:transparent;font:13px/1.6 var(--mono)}
-[hidden]{display:none!important}
-#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translate(-50%,12px);background:var(--text);color:var(--bg);padding:9px 16px;border-radius:5px;font-weight:500;font-size:14px;opacity:0;pointer-events:none;transition:opacity .15s,transform .15s;z-index:9;max-width:92vw}
+.btn.ghost{background:var(--bg);color:var(--text);border-color:var(--line)}
+.btn.ghost:hover{background:var(--hover);filter:none}
+.pane{flex:1;display:flex;flex-direction:column;min-height:0}
+.edwrap{flex:1;display:flex;min-height:0;background:var(--bg)}
+.gut{flex:none;min-width:46px;padding:14px 10px 30px 12px;text-align:right;color:var(--gutter);font:13px/20px var(--mono);overflow:hidden;white-space:pre;user-select:none;border-right:1px solid var(--line)}
+#text{flex:1;min-width:0;resize:none;border:0;border-radius:0;background:var(--bg);padding:14px 16px 30px;font:13px/20px var(--mono);white-space:pre;overflow:auto;tab-size:2}
+#text:focus{outline:none}
+
+/* ---- viewer ---- */
+.vbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding:12px 14px;border-bottom:1px solid var(--line);background:var(--bg)}
+.vcode{font:500 24px/1 var(--mono);letter-spacing:.22em;color:var(--accent)}
+.vmeta{color:var(--muted);font:12px var(--mono)}
+.vacts{display:flex;gap:8px;margin-left:auto}
+.vcode-wrap{flex:1;min-height:0;overflow:auto;display:flex;background:var(--bg)}
+.vgut{position:sticky;left:0;flex:none;padding:14px 10px 14px 12px;text-align:right;color:var(--gutter);background:var(--bg);border-right:1px solid var(--line);font:13px/20px var(--mono);white-space:pre;user-select:none}
+.vcode-wrap pre{margin:0;flex:1 0 auto}
+.vcode-wrap pre code.hljs{display:block;overflow:visible;min-width:max-content;padding:14px 16px;background:transparent;font:13px/20px var(--mono)}
+
+#toast{position:fixed;left:50%;bottom:calc(var(--nav) + 18px + env(safe-area-inset-bottom));transform:translate(-50%,10px);background:var(--text);color:var(--bg);padding:8px 14px;border-radius:6px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .15s,transform .15s;z-index:9;max-width:92vw}
 #toast.show{opacity:1;transform:translate(-50%,0)}
-@media (max-width:640px){
-  main{padding-top:24px}
-  textarea,select,#codeIn{font-size:16px}
-  textarea{min-height:280px}
-  .bar.foot{flex-direction:column;align-items:stretch}
-  .bar.foot .btn,.acts .btn{flex:1}
-  .hint{order:2}
-  .open .btn{flex:1 1 100%}
-  .acts{width:100%}
+
+/* ---- phone specifics ---- */
+@media (max-width:899px){
+  .gut{display:none}
+  #text{font-size:16px;line-height:24px;white-space:pre-wrap;padding:14px 14px 96px}
+  select,#codeIn{font-size:16px}
+  select{height:34px}
+  #saveBtn{position:fixed;right:14px;bottom:calc(var(--nav) + 14px + env(safe-area-inset-bottom));height:46px;padding:0 22px;font-size:15px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.25);z-index:5}
+  .tab{padding:0 12px}
+  .tools{padding:6px 0}
+  .vacts{width:100%;margin-left:0}
+  .vacts .btn{flex:1;height:40px}
+  .vcode{font-size:22px}
+}
+
+/* ---- desktop: an IDE ---- */
+@media (min-width:900px){
+  .app{grid-template-columns:284px minmax(0,1fr);grid-template-rows:46px minmax(0,1fr) 26px;grid-template-areas:"top top" "side main" "status status"}
+  .top{height:46px;padding:0 16px}
+  .hint{display:block}
+  .side{grid-area:side;display:block!important;border-right:1px solid var(--line)}
+  .main{grid-area:main;display:flex!important}
+  .sec-open,.sec-recent{display:block!important}
+  .bnav{display:none}
+  .status{grid-area:status;display:flex;align-items:center;gap:18px;padding:0 14px;background:var(--status);color:#fff;font:12px var(--mono)}
+  .status .sp{margin-left:auto}
+  .status .sp ~ span{margin-left:0}
+  .conn::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#7ee787;margin-right:7px}
+  .conn.off::before{background:#ffa198}
+  #toast{bottom:44px}
+  .tabbar{padding-right:14px}
 }
 @media (prefers-reduced-motion:reduce){#toast{transition:none}}
 </style>
 </head>
-<body>
-<header class="top"><div class="in">
-  <div class="logo"><span class="mark"></span>PasteRoom</div>
-  <button class="theme" id="themeBtn" aria-label="Switch between light and dark theme">
-    <svg class="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
-    <svg class="moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
-  </button>
-</div></header>
-
-<main class="in">
-  <h1>Share text with a 6-character code</h1>
-  <p class="sub">No account needed. Paste your text, get a code, and send it to anyone.</p>
-
-  <div class="tabs" role="tablist">
-    <button class="tab" role="tab" id="tabNew" aria-selected="true">New paste</button>
-    <button class="tab" role="tab" id="tabOpen" aria-selected="false">Open a code</button>
-  </div>
-
-  <section id="newPanel" class="editor">
-    <div class="bar head">
-      <select id="lang" aria-label="Language">
-        <option value="auto">Auto-detect</option>
-        <option value="plaintext">Plain text</option>
-        <option value="javascript">JavaScript</option>
-        <option value="typescript">TypeScript</option>
-        <option value="python">Python</option>
-        <option value="java">Java</option>
-        <option value="cpp">C++</option>
-        <option value="csharp">C#</option>
-        <option value="go">Go</option>
-        <option value="rust">Rust</option>
-        <option value="php">PHP</option>
-        <option value="ruby">Ruby</option>
-        <option value="kotlin">Kotlin</option>
-        <option value="swift">Swift</option>
-        <option value="xml">HTML / XML</option>
-        <option value="css">CSS</option>
-        <option value="json">JSON</option>
-        <option value="yaml">YAML</option>
-        <option value="sql">SQL</option>
-        <option value="bash">Bash</option>
-        <option value="markdown">Markdown</option>
-      </select>
-      <span class="count" id="count">0 / 100,000</span>
+<body data-view="new" data-show="editor">
+<div class="app">
+  <header class="top">
+    <div class="logo">
+      <svg viewBox="0 0 24 24"><path d="M8 4h8l4 4v12H8z"/><path d="M4 8v12M12 12h4M12 16h4"/></svg>PasteRoom
     </div>
-    <textarea id="text" placeholder="Paste your text or code here" spellcheck="false" maxlength="100000" aria-label="Paste content"></textarea>
-    <div class="bar foot">
-      <span class="hint">Anyone with the code can read this paste.</span>
-      <button class="btn" id="saveBtn">Create code</button>
-    </div>
-  </section>
+    <span class="hint">Ctrl+Enter saves</span>
+    <button class="icon" id="themeBtn" aria-label="Switch between light and dark theme">
+      <svg class="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      <svg class="moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    </button>
+  </header>
 
-  <section id="openPanel" class="open" hidden>
-    <label for="codeIn">Enter a code</label>
-    <div class="row">
-      <input id="codeIn" maxlength="6" placeholder="ABC234" autocomplete="off" autocapitalize="characters" spellcheck="false">
-      <button class="btn" id="openBtn">Open paste</button>
-    </div>
-  </section>
-
-  <section id="view" hidden>
-    <div class="vhead">
-      <div class="cells" id="cells" aria-label="Paste code"></div>
-      <div class="acts">
-        <button class="btn" id="copyText">Copy text</button>
-        <button class="btn ghost" id="copyCode">Copy code</button>
-        <button class="btn ghost" id="newBtn">New paste</button>
+  <aside class="side">
+    <div class="sec-open">
+      <h2>Open a code</h2>
+      <div class="row">
+        <input id="codeIn" maxlength="6" placeholder="ABC234" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Paste code">
+        <button class="btn" id="openBtn" style="height:44px">Open</button>
       </div>
+      <p class="note">Anyone with a code can read that paste. Codes have 6 letters or digits.</p>
     </div>
-    <p class="meta" id="meta"></p>
-    <div class="code"><div class="gutter" id="gutter" aria-hidden="true"></div><pre><code id="out" class="hljs"></code></pre></div>
-  </section>
-</main>
+    <div class="sec-recent">
+      <h2>Recent on this device</h2>
+      <div id="recent"></div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <section class="pane" id="editor">
+      <div class="tabbar">
+        <div class="tab"><i id="dot"></i><span id="fname">paste.txt</span></div>
+        <div class="tools">
+          <select id="lang" aria-label="Language">
+            <option value="auto">Auto-detect</option>
+            <option value="plaintext">Plain text</option>
+            <option value="javascript">JavaScript</option>
+            <option value="typescript">TypeScript</option>
+            <option value="python">Python</option>
+            <option value="java">Java</option>
+            <option value="cpp">C++</option>
+            <option value="csharp">C#</option>
+            <option value="go">Go</option>
+            <option value="rust">Rust</option>
+            <option value="php">PHP</option>
+            <option value="ruby">Ruby</option>
+            <option value="kotlin">Kotlin</option>
+            <option value="swift">Swift</option>
+            <option value="xml">HTML / XML</option>
+            <option value="css">CSS</option>
+            <option value="json">JSON</option>
+            <option value="yaml">YAML</option>
+            <option value="sql">SQL</option>
+            <option value="bash">Bash</option>
+            <option value="markdown">Markdown</option>
+          </select>
+          <button class="btn" id="saveBtn">Save paste</button>
+        </div>
+      </div>
+      <div class="edwrap">
+        <div class="gut" id="gut" aria-hidden="true">1</div>
+        <textarea id="text" wrap="off" placeholder="Paste your text or code here" spellcheck="false" maxlength="100000" aria-label="Paste content"></textarea>
+      </div>
+    </section>
+
+    <section class="pane" id="viewer">
+      <div class="vbar">
+        <span class="vcode" id="codeLabel"></span>
+        <span class="vmeta" id="meta"></span>
+        <div class="vacts">
+          <button class="btn" id="copyText">Copy text</button>
+          <button class="btn ghost" id="copyCode">Copy code</button>
+          <button class="btn ghost" id="newBtn">New</button>
+        </div>
+      </div>
+      <div class="vcode-wrap"><div class="vgut" id="vgut" aria-hidden="true"></div><pre><code id="out" class="hljs"></code></pre></div>
+    </section>
+  </main>
+
+  <footer class="status">
+    <span class="conn" id="conn">connecting</span>
+    <span id="stPos">Ln 1, Col 1</span>
+    <span class="sp" id="stLang">Plain text</span>
+    <span id="stChars">0 / 100,000</span>
+    <span id="stCode">no code</span>
+  </footer>
+
+  <nav class="bnav" aria-label="Sections">
+    <button id="nNew" aria-current="true"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>New</button>
+    <button id="nOpen"><svg viewBox="0 0 24 24"><path d="M4 9h16M4 15h16M10 3L8 21M16 3l-2 18"/></svg>Open</button>
+    <button id="nRecent"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Recent</button>
+  </nav>
+</div>
 <div id="toast" role="status" aria-live="polite"></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -178,6 +239,11 @@ const $ = s => document.querySelector(s);
 const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const CODE_RE = /^[A-HJ-NP-Z2-9]{6}$/;
 const MAX = 100000;
+const EXT = { javascript:'js', typescript:'ts', python:'py', java:'java', cpp:'cpp', csharp:'cs', go:'go', rust:'rs',
+  php:'php', ruby:'rb', kotlin:'kt', swift:'swift', xml:'html', css:'css', json:'json', yaml:'yml', sql:'sql',
+  bash:'sh', markdown:'md' };
+const ext = l => EXT[l] || 'txt';
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 let current = '', currentCode = '';
 
 /* ---------- theme ---------- */
@@ -190,7 +256,7 @@ function setTheme(t) {
 $('#themeBtn').onclick = () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
 setTheme(document.documentElement.dataset.theme);
 
-/* ---------- ui helpers ---------- */
+/* ---------- helpers ---------- */
 let toastTimer;
 function toast(msg) {
   const t = $('#toast');
@@ -211,21 +277,62 @@ function fallbackCopy(str, done) {
   try { document.execCommand('copy'); done(); } catch (e) { toast('Copy failed. Select the text manually.'); }
   ta.remove();
 }
-function tab(which) {
-  const isNew = which === 'new';
-  $('#tabNew').setAttribute('aria-selected', isNew);
-  $('#tabOpen').setAttribute('aria-selected', !isNew);
-  $('#newPanel').hidden = !isNew;
-  $('#openPanel').hidden = isNew;
-  if (!isNew) $('#codeIn').focus();
+// On phones the bottom nav switches views; on desktop the sidebar is always visible.
+function setView(v) {
+  document.body.dataset.view = v;
+  [['nNew','new'],['nOpen','open'],['nRecent','recent']].forEach(([id, n]) =>
+    $('#' + id).setAttribute('aria-current', n === v));
+  if (v === 'open' && matchMedia('(max-width:899px)').matches) $('#codeIn').focus();
 }
-$('#tabNew').onclick = () => tab('new');
-$('#tabOpen').onclick = () => tab('open');
+$('#nNew').onclick = () => document.body.dataset.show === 'viewer' ? newPaste() : setView('new');
+$('#nOpen').onclick = () => setView('open');
+$('#nRecent').onclick = () => setView('recent');
 
-function updateCount() {
-  $('#count').textContent = $('#text').value.length.toLocaleString() + ' / 100,000';
+/* ---------- connection status ---------- */
+db.ref('.info/connected').on('value', s => {
+  const c = $('#conn'), on = s.val() === true;
+  c.textContent = on ? 'online' : 'offline';
+  c.classList.toggle('off', !on);
+});
+
+/* ---------- editor: gutter, cursor, status ---------- */
+const ta = $('#text');
+function langName() { return $('#lang').selectedOptions[0].textContent; }
+function refresh() {
+  const n = ta.value.split('\n').length;
+  $('#gut').textContent = Array.from({ length: n }, (_, i) => i + 1).join('\n');
+  $('#stChars').textContent = ta.value.length.toLocaleString() + ' / 100,000';
+  $('#dot').className = '';
+  $('#fname').textContent = 'paste.' + ext($('#lang').value);
+  $('#stLang').textContent = langName();
+  cursor();
 }
-$('#text').addEventListener('input', updateCount);
+function cursor() {
+  const v = ta.value.slice(0, ta.selectionStart);
+  $('#stPos').textContent = 'Ln ' + v.split('\n').length + ', Col ' + (v.length - v.lastIndexOf('\n'));
+}
+ta.addEventListener('input', refresh);
+['keyup', 'click'].forEach(e => ta.addEventListener(e, cursor));
+ta.addEventListener('scroll', () => { $('#gut').scrollTop = ta.scrollTop; });
+$('#lang').addEventListener('change', refresh);
+ta.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') createPaste(); });
+
+/* ---------- recent codes (kept on this device only) ---------- */
+function getRecent() { try { return JSON.parse(localStorage.getItem('recent') || '[]'); } catch (e) { return []; } }
+function addRecent(code, text) {
+  const list = getRecent().filter(r => r.c !== code);
+  list.unshift({ c: code, p: text.trim().slice(0, 40).replace(/\s+/g, ' ') });
+  try { localStorage.setItem('recent', JSON.stringify(list.slice(0, 10))); } catch (e) {}
+  renderRecent();
+}
+function renderRecent() {
+  const l = getRecent().filter(r => CODE_RE.test(r.c));
+  $('#recent').innerHTML = l.length
+    ? l.map(r => '<button class="ri" data-c="' + r.c + '"><b>' + r.c + '</b><span>' + esc(r.p) + '</span></button>').join('')
+    : '<p class="empty">Codes you create or open show up here.</p>';
+}
+$('#recent').onclick = e => { const b = e.target.closest('.ri'); if (b) openPaste(b.dataset.c); };
+renderRecent();
 
 /* ---------- show a paste ---------- */
 function show(code, text, lang) {
@@ -243,22 +350,27 @@ function show(code, text, lang) {
     } catch (e) { out.textContent = text; }
   } else out.textContent = text;
   const lines = text.split('\n').length;
-  $('#gutter').textContent = Array.from({ length: lines }, (_, i) => i + 1).join('\n');
-  $('#cells').innerHTML = [...code].map(c => '<span>' + c + '</span>').join('');
-  $('#meta').textContent = used + ', ' + lines.toLocaleString() + (lines === 1 ? ' line, ' : ' lines, ') +
-    text.length.toLocaleString() + ' characters';
-  $('#view').hidden = false;
+  $('#vgut').textContent = Array.from({ length: lines }, (_, i) => i + 1).join('\n');
+  $('#codeLabel').textContent = code;
+  $('#meta').textContent = used + ', ' + lines.toLocaleString() + (lines === 1 ? ' line' : ' lines');
+  $('#stCode').textContent = 'code ' + code;
+  $('#stLang').textContent = used;
+  $('#stChars').textContent = text.length.toLocaleString() + ' chars';
+  document.body.dataset.show = 'viewer';
+  setView('new');
+  addRecent(code, text);
   history.replaceState(null, '', '#' + code);
-  $('#view').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 $('#copyCode').onclick = () => copy(currentCode, 'Code copied');
 $('#copyText').onclick = () => copy(current, 'Text copied');
-$('#newBtn').onclick = () => {
-  $('#text').value = ''; updateCount();
-  $('#view').hidden = true;
+function newPaste() {
+  ta.value = ''; refresh();
+  document.body.dataset.show = 'editor';
+  $('#stCode').textContent = 'no code';
   history.replaceState(null, '', location.pathname + location.search);
-  tab('new'); $('#text').focus(); window.scrollTo({ top: 0, behavior: 'smooth' });
-};
+  setView('new'); ta.focus();
+}
+$('#newBtn').onclick = newPaste;
 
 /* ---------- create ---------- */
 function genCode() {
@@ -267,7 +379,7 @@ function genCode() {
   return Array.from(a, n => ALPHABET[n % ALPHABET.length]).join(''); // 32 chars: no modulo bias
 }
 async function createPaste() {
-  const text = $('#text').value;
+  const text = ta.value;
   const lang = $('#lang').value;
   if (!text.trim()) return toast('Paste some text first');
   if (text.length > MAX) return toast('Too long. The limit is 100,000 characters');
@@ -289,7 +401,7 @@ async function createPaste() {
     console.error(e);
     toast('Save failed. Check your database rules and connection');
   } finally {
-    btn.disabled = false; btn.textContent = 'Create code';
+    btn.disabled = false; btn.textContent = 'Save paste';
   }
 }
 $('#saveBtn').onclick = createPaste;
@@ -315,8 +427,9 @@ $('#codeIn').addEventListener('keydown', e => { if (e.key === 'Enter') openPaste
 $('#codeIn').addEventListener('input', e => { e.target.value = e.target.value.toUpperCase(); });
 
 /* ---------- open from link, e.g. yoursite.github.io/#ABC234 ---------- */
+refresh();
 const h = location.hash.slice(1).toUpperCase();
-if (CODE_RE.test(h)) { tab('open'); $('#codeIn').value = h; openPaste(h); }
+if (CODE_RE.test(h)) { $('#codeIn').value = h; openPaste(h); }
 </script>
 </body>
 </html>
